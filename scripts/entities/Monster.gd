@@ -34,7 +34,7 @@ func _physics_process(_delta: float) -> void:
 
 	var dist := global_position.distance_to(_player.global_position)
 	if dist < chase_radius:
-		var dir := (_player.global_position - global_position).normalized()
+		var dir: Vector2 = (_player.global_position - global_position).normalized()
 		velocity = dir * speed
 	else:
 		velocity = Vector2.ZERO
