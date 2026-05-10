@@ -83,7 +83,8 @@ static func _carve_path(grid: Array, from: Vector2i, to: Vector2i, rng: RandomNu
 			if dir == Vector2i.ZERO:
 				dir = Vector2i.RIGHT
 		else:
-			dir = [Vector2i.UP, Vector2i.DOWN, Vector2i.LEFT, Vector2i.RIGHT][rng.randi() % 4]
+			var dirs: Array[Vector2i] = [Vector2i.UP, Vector2i.DOWN, Vector2i.LEFT, Vector2i.RIGHT]
+			dir = dirs[rng.randi() % 4]
 		pos += dir
 		pos.x = clampi(pos.x, 1, MAP_W - 2)
 		pos.y = clampi(pos.y, 1, MAP_H - 2)
@@ -103,7 +104,8 @@ static func _add_branches(grid: Array, rng: RandomNumberGenerator) -> void:
 			continue
 		var pos := Vector2i(sx, sy)
 		for _j in rng.randi_range(10, 25):
-			var dir: Vector2i = [Vector2i.UP, Vector2i.DOWN, Vector2i.LEFT, Vector2i.RIGHT][rng.randi() % 4]
+			var dirs2: Array[Vector2i] = [Vector2i.UP, Vector2i.DOWN, Vector2i.LEFT, Vector2i.RIGHT]
+			var dir: Vector2i = dirs2[rng.randi() % 4]
 			pos += dir
 			pos.x = clampi(pos.x, 1, MAP_W - 2)
 			pos.y = clampi(pos.y, 1, MAP_H - 2)
