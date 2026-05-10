@@ -35,7 +35,7 @@ func _ready() -> void:
 	_spawn_all(gen)
 	_spawn_puzzles(gen)
 	_spawn_border()
-	player.position = _wp(gen.pois.HOME) + Vector2(64, 16)  # spawn outside house door
+	player.position = _wp(gen.pois.HOME) + Vector2(64, 16)
 
 func _preload_scenes() -> void:
 	for key in SCENE_PATHS:
@@ -49,22 +49,19 @@ func _apply_tiles(grid: Array) -> void:
 
 # ---------------------------------------------------------------------------
 func _spawn_all(gen: Dictionary) -> void:
-	# ── Forest entities ──
 	for spawn in gen.entity_spawns:
 		_spawn(spawn.type, spawn.pos)
 
-	# ── Letters ──
 	var letter_spawns: Array = gen.letter_spawns
 	for i in letter_spawns.size():
 		var node = _spawn("Letter", letter_spawns[i])
 		if node:
 			node.entity_id = "letter_%d" % (i + 1)
 
-	# ── Anchors ──
 	for pos in gen.anchor_spawns:
 		_spawn("Anchor", pos)
 
-	# ── HOME: house + chest inside + mother outside ──
+	# HOME: house + chest inside + mother outside
 	var house := _spawn("House", gen.pois.HOME)
 	if house:
 		house.entity_id = "player_house"
@@ -79,27 +76,27 @@ func _spawn_all(gen: Dictionary) -> void:
 		mother_home.entity_id    = "mother_home"
 		mother_home.sleep_after  = true
 
-	# ── HUT (centre): diary only, no NPC ──
+	# HUT (centre): diary only
 	var diary := _spawn("Diary", gen.pois.HUT + Vector2i(1, 1))
 	if diary:
 		diary.entity_id = "father_diary"
 
-	# ── HEART shrine ──
+	# HEART shrine
 	var shrine := _spawn("HeartShrine", gen.pois.HEART)
 	if shrine:
 		shrine.entity_id = "heart_shrine"
 
-	# ── Monsters ──
+	# Monsters
 	for spawn in gen.monster_spawns:
 		var m := _spawn("Monster", spawn.pos)
 		if m:
 			m.add_to_group("monster")
 
-	# ── Spirits (Echo only, atmospheric) ──
+	# Spirits (Echo-only atmosphere)
 	for pos in gen.spirit_spawns:
 		_spawn("Spirit", pos)
 
-	# ── POI markers ──
+	# POI markers
 	var poi_tex = load("res://assets/ui/poi_marker.png")
 	if poi_tex:
 		_add_poi_marker(gen.pois.HOME,  Color(1.0, 0.3, 0.3), poi_tex)
@@ -113,54 +110,83 @@ func _spawn_puzzles(gen: Dictionary) -> void:
 		var id: String    = puzzle.id
 		match puzzle.type:
 			"RealityBridgeGate":
+				# Chasm kills in Light; Bridge is safe path in Echo.
+				# Barrier forces player to engage (can't walk around).
 				var chasm  := _spawn("Chasm",  pos)
 				var bridge := _spawn("Bridge", pos)
 				if chasm:  chasm.entity_id  = id + "_chasm"
 				if bridge: bridge.entity_id = id + "_bridge"
+				_add_puzzle_barrier(pos)
 				GameState.puzzle_states[id] = false
 
 			"KeyLockGate":
+				# Door blocks path; key is placed nearby.
 				var door := _spawn("Door", pos)
 				var key  := _spawn("Key",  pos + Vector2i(4, 0))
 				if door: door.entity_id = id + "_door"
 				if key:  key.entity_id  = id + "_key"
+				_add_puzzle_barrier(pos)
 				GameState.puzzle_states[id] = false
 
 			"EchoSwitchesGate":
+				# Door can only be opened by activating both switches in Echo.
 				var door := _spawn("Door",   pos)
 				var sw1  := _spawn("Switch", pos + Vector2i(-4, -4))
 				var sw2  := _spawn("Switch", pos + Vector2i( 4, -4))
-				if door: door.entity_id = id + "_door"
-				if sw1:  sw1.entity_id  = id + "_sw1"
-				if sw2:  sw2.entity_id  = id + "_sw2"
+				if door:
+					door.entity_id   = id + "_door"
+					door.switch_locked = true     # disable manual key-open
+					door.requires_key  = false
+				if sw1: sw1.entity_id = id + "_sw1"
+				if sw2: sw2.entity_id = id + "_sw2"
 				if door and sw1 and sw2:
 					var gate := EchoSwitchGate.new()
 					gate.setup([sw1, sw2], door)
 					entities.add_child(gate)
+				_add_puzzle_barrier(pos)
 				GameState.puzzle_states[id] = false
+
+# Add an invisible + cross barrier around a puzzle tile.
+# Each arm spans ARM_TILES in one direction, with a single-tile gap at center for the door.
+func _add_puzzle_barrier(tile_pos: Vector2i) -> void:
+	var ts   := float(Const.TILE_SIZE)
+	var arm  := 22.0 * ts      # arm length (tiles → pixels)
+	var gap  := ts * 1.6       # gap at door (player passes through here)
+	var th   := ts * 1.4       # wall thickness
+	var c    := _wp(tile_pos)
+
+	var half_arm := arm * 0.5
+	var half_gap := gap * 0.5
+
+	# Horizontal fence — left arm
+	_add_border_wall(c + Vector2(-(half_gap + half_arm), 0.0), Vector2(arm, th))
+	# Horizontal fence — right arm
+	_add_border_wall(c + Vector2( (half_gap + half_arm), 0.0), Vector2(arm, th))
+	# Vertical fence — upper arm
+	_add_border_wall(c + Vector2(0.0, -(half_gap + half_arm)), Vector2(th, arm))
+	# Vertical fence — lower arm
+	_add_border_wall(c + Vector2(0.0,  (half_gap + half_arm)), Vector2(th, arm))
 
 # ---------------------------------------------------------------------------
 func _spawn_border() -> void:
 	var mw := Const.MAP_W_TILES * Const.TILE_SIZE
 	var mh := Const.MAP_H_TILES * Const.TILE_SIZE
-	_add_border_wall(Vector2(mw / 2.0, -16),     Vector2(mw + 64, 32))  # top
-	_add_border_wall(Vector2(mw / 2.0, mh + 16), Vector2(mw + 64, 32))  # bottom
-	_add_border_wall(Vector2(-16, mh / 2.0),     Vector2(32, mh + 64))  # left
-	_add_border_wall(Vector2(mw + 16, mh / 2.0), Vector2(32, mh + 64))  # right
+	# Four invisible walls outside map edges
+	_add_border_wall(Vector2(mw / 2.0, -16),     Vector2(mw + 64, 32))
+	_add_border_wall(Vector2(mw / 2.0, mh + 16), Vector2(mw + 64, 32))
+	_add_border_wall(Vector2(-16, mh / 2.0),     Vector2(32, mh + 64))
+	_add_border_wall(Vector2(mw + 16, mh / 2.0), Vector2(32, mh + 64))
 
-	# Two-tile dark tree ring around the whole map
+	# Light visual border: spawn a tree every 3 tiles along the outer ring
+	# (every tile would be ~1200 instances; every 3 = ~400)
 	var w := Const.MAP_W_TILES
 	var h := Const.MAP_H_TILES
-	for x in w:
+	for x in range(0, w, 3):
 		_spawn_border_tree(Vector2i(x, 0))
-		_spawn_border_tree(Vector2i(x, 1))
 		_spawn_border_tree(Vector2i(x, h - 1))
-		_spawn_border_tree(Vector2i(x, h - 2))
-	for y in range(2, h - 2):
+	for y in range(0, h, 3):
 		_spawn_border_tree(Vector2i(0, y))
-		_spawn_border_tree(Vector2i(1, y))
 		_spawn_border_tree(Vector2i(w - 1, y))
-		_spawn_border_tree(Vector2i(w - 2, y))
 
 func _spawn_border_tree(tile_pos: Vector2i) -> void:
 	if not _scenes.has("Tree"):
@@ -168,7 +194,7 @@ func _spawn_border_tree(tile_pos: Vector2i) -> void:
 	var node: Node = _scenes["Tree"].instantiate()
 	node.position = _wp(tile_pos)
 	if node.has_node("Sprite2D"):
-		node.get_node("Sprite2D").modulate = Color(0.22, 0.28, 0.22, 1.0)
+		node.get_node("Sprite2D").modulate = Color(0.20, 0.26, 0.20, 1.0)
 	entities.add_child(node)
 
 func _add_border_wall(pos: Vector2, size: Vector2) -> void:
@@ -186,7 +212,7 @@ func _spawn(type: String, tile_pos: Vector2i) -> Node:
 	if not _scenes.has(type):
 		return null
 	var node: Node = _scenes[type].instantiate()
-	node.position = _wp(tile_pos)
+	node.position  = _wp(tile_pos)
 	entities.add_child(node)
 	return node
 
@@ -204,7 +230,6 @@ func _wp(tile_pos: Vector2i) -> Vector2:
 	)
 
 # ---------------------------------------------------------------------------
-# Reality visual switch — handled per-entity in Player.gd; here only CanvasModulate
 func _on_reality_changed(_new: Variant) -> void:
 	var target := Const.TINT_ECHO if RealityManager.is_echo() else Const.TINT_LIGHT
 	var tw := create_tween()

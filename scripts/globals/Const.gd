@@ -23,7 +23,7 @@ const PING_COOLDOWN := 0.7
 
 # === PROCGEN ===
 const PATH_WIDTH_TILES := 3
-const TREE_DENSITY := 0.18
+const TREE_DENSITY := 0.11   # lower = faster load; ~2400 trees on 150x150
 const NUM_PUZZLES := 4
 const NUM_LETTERS := 6
 const NUM_MONSTERS := 8

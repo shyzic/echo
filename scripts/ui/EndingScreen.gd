@@ -15,6 +15,8 @@ extends CanvasLayer
 const TYPEWRITER_SPEED := 0.038   # seconds per character
 
 func _ready() -> void:
+	# Read ending id from GameState (set by SceneRouter.goto_ending)
+	ending_id = GameState.pending_ending
 	btn_title.visible = false
 	btn_title.pressed.connect(func(): SceneRouter.goto_title())
 	narration.text = ""

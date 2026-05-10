@@ -8,13 +8,8 @@ func goto_world() -> void:
 	SaveManager.has_checkpoint = false
 	get_tree().change_scene_to_file.call_deferred("res://scenes/world/World.tscn")
 
+# Store ending id in GameState, then do a normal scene swap.
+# This avoids the manual current_scene manipulation that causes the restart freeze.
 func goto_ending(which: String) -> void:
-	var packed = load("res://scenes/ui/EndingScreen.tscn")
-	if not packed:
-		return
-	var inst = packed.instantiate()
-	inst.ending_id = which
-	get_tree().root.call_deferred("add_child", inst)
-	if get_tree().current_scene:
-		get_tree().current_scene.queue_free()
-	get_tree().current_scene = inst
+	GameState.pending_ending = which
+	get_tree().change_scene_to_file.call_deferred("res://scenes/ui/EndingScreen.tscn")
