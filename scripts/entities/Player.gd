@@ -69,24 +69,34 @@ func _try_interact() -> void:
 	for area in areas:
 		if area.has_method("interact"):
 			area.interact(self)
+			_refresh_hint_deferred()
 			return
 
 func _on_interact_area_entered(area: Area2D) -> void:
 	if area.has_method("interact"):
-		var hint := "[E] "
-		if area.has_method("get_hint"):
-			hint += area.get_hint()
-		elif area.get_parent() is StaticBody2D or area is Area2D:
-			hint += "Взаимодействовать"
-		_show_hud_hint(hint)
+		_refresh_hint()
 
 func _on_interact_area_exited(_area: Area2D) -> void:
-	# Only hide if no other interactables remain
+	_refresh_hint_deferred()
+
+func _refresh_hint() -> void:
 	var areas := interact_area.get_overlapping_areas()
-	for a in areas:
-		if a.has_method("interact"):
+	for area in areas:
+		if area.has_method("interact") and is_instance_valid(area):
+			var hint: String = "[E]  "
+			if area.has_method("get_hint"):
+				hint += area.get_hint()
+			else:
+				hint += "Взаимодействовать"
+			_show_hud_hint(hint)
 			return
 	_hide_hud_hint()
+
+func _refresh_hint_deferred() -> void:
+	# Wait two frames so queue_free areas are actually removed
+	await get_tree().process_frame
+	await get_tree().process_frame
+	_refresh_hint()
 
 func _show_hud_hint(text: String) -> void:
 	var hud := get_tree().get_first_node_in_group("hud")
