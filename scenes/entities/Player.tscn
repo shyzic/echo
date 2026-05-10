@@ -1,5 +1,6 @@
-[gd_scene load_steps=29 format=3 uid="uid://c00000000003"]
+[gd_scene load_steps=30 format=3 uid="uid://c00000000003"]
 
+[ext_resource type="Script" path="res://scripts/entities/Player.gd" id="1_player"]
 [ext_resource type="Texture2D" uid="uid://dqfsfphjl0ocv" path="res://assets/sprites/player/На лево/Frame 4 .png" id="2_gpcb7"]
 [ext_resource type="Texture2D" uid="uid://dsyi8refqolsi" path="res://assets/sprites/player/Вниз/Frame1.png" id="2_j1g85"]
 [ext_resource type="Texture2D" uid="uid://bsjpwk4t3ine1" path="res://assets/sprites/player_placeholder.png" id="2_player"]
@@ -206,7 +207,7 @@ _data = {
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_interact"]
 
 [node name="Player" type="CharacterBody2D"]
-script = SubResource("GDScript_24gqh")
+script = ExtResource("1_player")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
 position = Vector2(5.96046e-08, -10)
