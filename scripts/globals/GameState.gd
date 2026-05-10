@@ -11,9 +11,11 @@ var anchors_visited: Array[String] = []
 var play_time_seconds: float = 0.0
 var hidden_endings_qualifying: bool = false
 
-# Narrative gates
-var hut_visited: bool = false
-var diary_read: bool = false
+# Narrative gates (mandatory story order)
+var chest_opened:   bool = false   # grabbed medallion from home chest
+var mother_talked:  bool = false   # spoke with mother before leaving
+var hut_visited:    bool = false   # reached father's hut
+var diary_read:     bool = false   # read the diary → unlocks HeartShrine
 
 const TOTAL_LETTERS: int = 6
 
@@ -24,6 +26,9 @@ func collect_letter(id: String) -> void:
 	if id in letters_collected:
 		return
 	letters_collected[id] = true
+	# Unlock hidden ending if all letters found and chose free
+	if letters_collected.size() >= TOTAL_LETTERS:
+		hidden_endings_qualifying = true
 	letters_changed.emit(letters_collected.size(), TOTAL_LETTERS)
 
 func is_letter_collected(id: String) -> bool:
@@ -34,5 +39,8 @@ func reset() -> void:
 	puzzle_states.clear()
 	anchors_visited.clear()
 	play_time_seconds = 0.0
-	hut_visited = false
-	diary_read = false
+	hidden_endings_qualifying = false
+	chest_opened  = false
+	mother_talked = false
+	hut_visited   = false
+	diary_read    = false

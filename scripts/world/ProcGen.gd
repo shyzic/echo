@@ -21,41 +21,44 @@ static func generate(seed: int) -> Dictionary:
 
 	var pois := _place_pois(rng)
 
-	# Stamp POI clearings so paths connect and flood-fill works
+	# Stamp bigger clearings around each POI
 	for poi in [pois.HOME, pois.HUT, pois.HEART]:
-		_stamp_clearing(grid, poi, 3)
+		_stamp_clearing(grid, poi, 4)
 
 	_carve_path(grid, pois.HOME, pois.HUT, rng)
 	_carve_path(grid, pois.HUT, pois.HEART, rng)
 	_add_branches(grid, rng)
 
-	var entity_spawns := _place_trees(grid, rng, pois)
-	var puzzle_spawns := _place_puzzles(grid, rng, pois)
-	var letter_spawns := _place_letters(grid, rng)
-	var anchor_spawns := _place_anchors(pois)
+	var entity_spawns  := _place_trees(grid, rng, pois)
+	var puzzle_spawns  := _place_puzzles(grid, rng, pois)
+	var letter_spawns  := _place_letters(grid, rng)
+	var anchor_spawns  := _place_anchors(pois)
 	var monster_spawns := _place_monsters(grid, rng, pois)
+	var spirit_spawns  := _place_spirits(grid, rng, pois)
 
 	if not _validate(grid, pois):
 		return generate(seed + 1)
 
 	return {
-		"seed": seed,
-		"grid": grid,
-		"pois": pois,
+		"seed":          seed,
+		"grid":          grid,
+		"pois":          pois,
 		"entity_spawns": entity_spawns,
 		"puzzle_spawns": puzzle_spawns,
 		"letter_spawns": letter_spawns,
 		"anchor_spawns": anchor_spawns,
 		"monster_spawns": monster_spawns,
+		"spirit_spawns": spirit_spawns,
 	}
 
+# ---------------------------------------------------------------------------
 static func _place_pois(rng: RandomNumberGenerator) -> Dictionary:
-	var home := Vector2i(8 + rng.randi_range(0, 3), 8 + rng.randi_range(0, 3))
-	var heart := Vector2i(MAP_W - 10 + rng.randi_range(0, 3), MAP_H - 10 + rng.randi_range(0, 3))
+	var home  := Vector2i(12 + rng.randi_range(0, 3), 12 + rng.randi_range(0, 3))
+	var heart := Vector2i(MAP_W - 14 + rng.randi_range(0, 3), MAP_H - 14 + rng.randi_range(0, 3))
 	var hut: Vector2i
 	var attempts := 0
-	while attempts < 50:
-		hut = Vector2i(MAP_W / 2 + rng.randi_range(-5, 5), MAP_H / 2 + rng.randi_range(-5, 5))
+	while attempts < 100:
+		hut = Vector2i(MAP_W / 2 + rng.randi_range(-8, 8), MAP_H / 2 + rng.randi_range(-8, 8))
 		if home.distance_to(hut) >= Const.MIN_POI_DIST and heart.distance_to(hut) >= Const.MIN_POI_DIST:
 			break
 		attempts += 1
@@ -71,11 +74,11 @@ static func _stamp_clearing(grid: Array, center: Vector2i, radius: int) -> void:
 
 static func _carve_path(grid: Array, from: Vector2i, to: Vector2i, rng: RandomNumberGenerator) -> void:
 	var pos := from
-	var max_steps := 600
+	var max_steps := 2000
 	var step := 0
 	while pos.distance_to(to) > 2.0 and step < max_steps:
 		var dir: Vector2i
-		if rng.randf() < 0.7:
+		if rng.randf() < 0.72:
 			var d := Vector2(to - pos).normalized()
 			var dx := int(round(d.x))
 			var dy := int(round(d.y))
@@ -97,13 +100,13 @@ static func _carve_path(grid: Array, from: Vector2i, to: Vector2i, rng: RandomNu
 		step += 1
 
 static func _add_branches(grid: Array, rng: RandomNumberGenerator) -> void:
-	for _i in 8:
+	for _i in 20:
 		var sx := rng.randi_range(5, MAP_W - 5)
 		var sy := rng.randi_range(5, MAP_H - 5)
 		if grid[sy][sx] != Const.TILE_PATH:
 			continue
 		var pos := Vector2i(sx, sy)
-		for _j in rng.randi_range(10, 25):
+		for _j in rng.randi_range(15, 45):
 			var dirs2: Array[Vector2i] = [Vector2i.UP, Vector2i.DOWN, Vector2i.LEFT, Vector2i.RIGHT]
 			var dir: Vector2i = dirs2[rng.randi() % 4]
 			pos += dir
@@ -116,6 +119,7 @@ static func _add_branches(grid: Array, rng: RandomNumberGenerator) -> void:
 					if px > 0 and px < MAP_W - 1 and py > 0 and py < MAP_H - 1:
 						grid[py][px] = Const.TILE_PATH
 
+# ---------------------------------------------------------------------------
 static func _place_trees(grid: Array, rng: RandomNumberGenerator, pois: Dictionary) -> Array[Dictionary]:
 	var spawns: Array[Dictionary] = []
 	for y in MAP_H:
@@ -123,7 +127,7 @@ static func _place_trees(grid: Array, rng: RandomNumberGenerator, pois: Dictiona
 			if grid[y][x] == Const.TILE_PATH:
 				continue
 			var pos := Vector2i(x, y)
-			if pos.distance_to(pois.HOME) < 5 or pos.distance_to(pois.HUT) < 5 or pos.distance_to(pois.HEART) < 5:
+			if pos.distance_to(pois.HOME) < 6 or pos.distance_to(pois.HUT) < 5 or pos.distance_to(pois.HEART) < 5:
 				continue
 			if rng.randf() < Const.TREE_DENSITY:
 				var kind := "Tree" if rng.randf() > 0.2 else "Stone"
@@ -135,18 +139,18 @@ static func _place_puzzles(grid: Array, rng: RandomNumberGenerator, pois: Dictio
 	var types := ["RealityBridgeGate", "KeyLockGate", "EchoSwitchesGate", "KeyLockGate"]
 	var used: Array[Vector2i] = []
 	var attempts := 0
-	while spawns.size() < Const.NUM_PUZZLES and attempts < 400:
+	while spawns.size() < Const.NUM_PUZZLES and attempts < 800:
 		attempts += 1
-		var x := rng.randi_range(5, MAP_W - 5)
-		var y := rng.randi_range(5, MAP_H - 5)
+		var x := rng.randi_range(8, MAP_W - 8)
+		var y := rng.randi_range(8, MAP_H - 8)
 		if grid[y][x] != Const.TILE_PATH:
 			continue
 		var pos := Vector2i(x, y)
-		if pos.distance_to(pois.HOME) < 8 or pos.distance_to(pois.HUT) < 8 or pos.distance_to(pois.HEART) < 8:
+		if pos.distance_to(pois.HOME) < 14 or pos.distance_to(pois.HUT) < 12 or pos.distance_to(pois.HEART) < 12:
 			continue
 		var too_close := false
 		for u in used:
-			if pos.distance_to(u) < 14:
+			if pos.distance_to(u) < 22:
 				too_close = true
 				break
 		if too_close:
@@ -159,14 +163,14 @@ static func _place_puzzles(grid: Array, rng: RandomNumberGenerator, pois: Dictio
 static func _place_letters(grid: Array, rng: RandomNumberGenerator) -> Array[Vector2i]:
 	var spawns: Array[Vector2i] = []
 	var attempts := 0
-	while spawns.size() < Const.NUM_LETTERS and attempts < 600:
+	while spawns.size() < Const.NUM_LETTERS and attempts < 1500:
 		attempts += 1
-		var x := rng.randi_range(3, MAP_W - 3)
-		var y := rng.randi_range(3, MAP_H - 3)
+		var x := rng.randi_range(4, MAP_W - 4)
+		var y := rng.randi_range(4, MAP_H - 4)
 		var pos := Vector2i(x, y)
 		var too_close := false
 		for s in spawns:
-			if pos.distance_to(s) < 10:
+			if pos.distance_to(s) < 18:
 				too_close = true
 				break
 		if too_close:
@@ -176,26 +180,40 @@ static func _place_letters(grid: Array, rng: RandomNumberGenerator) -> Array[Vec
 
 static func _place_anchors(pois: Dictionary) -> Array[Vector2i]:
 	return [
-		pois.HOME + Vector2i(2, 0),
-		pois.HUT + Vector2i(0, 2),
-		pois.HEART + Vector2i(-2, 0),
+		pois.HOME  + Vector2i(3, 0),
+		pois.HUT   + Vector2i(0, 3),
+		pois.HEART + Vector2i(-3, 0),
 	]
 
 static func _place_monsters(grid: Array, rng: RandomNumberGenerator, pois: Dictionary) -> Array[Dictionary]:
 	var spawns: Array[Dictionary] = []
 	var attempts := 0
-	while spawns.size() < Const.NUM_MONSTERS and attempts < 300:
+	while spawns.size() < Const.NUM_MONSTERS and attempts < 800:
 		attempts += 1
 		var x := rng.randi_range(5, MAP_W - 5)
 		var y := rng.randi_range(5, MAP_H - 5)
 		if grid[y][x] != Const.TILE_PATH:
 			continue
 		var pos := Vector2i(x, y)
-		if pos.distance_to(pois.HOME) < 15:
+		if pos.distance_to(pois.HOME) < 22:
 			continue
 		spawns.append({"type": "Monster", "pos": pos})
 	return spawns
 
+static func _place_spirits(grid: Array, rng: RandomNumberGenerator, pois: Dictionary) -> Array[Vector2i]:
+	var spawns: Array[Vector2i] = []
+	var attempts := 0
+	while spawns.size() < Const.NUM_SPIRITS and attempts < 800:
+		attempts += 1
+		var x := rng.randi_range(5, MAP_W - 5)
+		var y := rng.randi_range(5, MAP_H - 5)
+		var pos := Vector2i(x, y)
+		if pos.distance_to(pois.HOME) < 16:
+			continue
+		spawns.append(pos)
+	return spawns
+
+# ---------------------------------------------------------------------------
 static func _validate(grid: Array, pois: Dictionary) -> bool:
 	var visited := {}
 	var queue: Array = [pois.HOME]

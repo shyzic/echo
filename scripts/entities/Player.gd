@@ -3,20 +3,23 @@ class_name Player
 
 @export var speed: float = Const.PLAYER_SPEED
 
-@onready var sprite: AnimatedSprite2D = $AnimatedSprite2D
-@onready var ping_cooldown_timer: Timer = $PingCooldown
-@onready var interact_area: Area2D = $InteractArea
+@onready var sprite: AnimatedSprite2D   = $AnimatedSprite2D
+@onready var ping_cooldown_timer: Timer  = $PingCooldown
+@onready var interact_area: Area2D       = $InteractArea
+@onready var point_light: PointLight2D  = $PointLight2D
 
 enum Facing { DOWN, UP, LEFT, RIGHT }
 var facing: Facing = Facing.DOWN
-var dead: bool = false
+var dead: bool        = false
 var input_locked: bool = false
-var has_key: bool = false
+var has_key: bool     = false
 
 func _ready() -> void:
 	add_to_group("player")
 	interact_area.area_entered.connect(_on_interact_area_entered)
 	interact_area.area_exited.connect(_on_interact_area_exited)
+	RealityManager.reality_changed.connect(_on_reality_changed)
+	_on_reality_changed(RealityManager.current)
 
 func _physics_process(_delta: float) -> void:
 	if dead or input_locked or DialogueManager.active:
@@ -43,18 +46,26 @@ func _physics_process(_delta: float) -> void:
 func _input(event: InputEvent) -> void:
 	if dead:
 		return
+
 	if event.is_action_pressed("shift_reality") and RealityManager.can_toggle():
+		if not GameState.chest_opened:
+			_show_hud_hint("Нужен медальон чтобы переключать миры")
+			return
 		RealityManager.toggle()
 		AudioManager.play("shift")
+
 	if event.is_action_pressed("ping") and RealityManager.is_echo() and ping_cooldown_timer.is_stopped():
 		_do_ping()
+
 	if event.is_action_pressed("interact") and not DialogueManager.active:
 		_try_interact()
+
 	if event.is_action_pressed("pause"):
 		var pause_scene = load("res://scenes/ui/PauseMenu.tscn")
 		if pause_scene:
 			get_tree().root.add_child(pause_scene.instantiate())
 
+# ---------------------------------------------------------------------------
 func _do_ping() -> void:
 	AudioManager.play("ping")
 	var ripple_scene = load("res://scenes/effects/PingRipple.tscn")
@@ -72,6 +83,7 @@ func _try_interact() -> void:
 			_refresh_hint_deferred()
 			return
 
+# ---------------------------------------------------------------------------
 func _on_interact_area_entered(area: Area2D) -> void:
 	if area.has_method("interact"):
 		_refresh_hint()
@@ -93,7 +105,6 @@ func _refresh_hint() -> void:
 	_hide_hud_hint()
 
 func _refresh_hint_deferred() -> void:
-	# Wait two frames so queue_free areas are actually removed
 	await get_tree().process_frame
 	await get_tree().process_frame
 	_refresh_hint()
@@ -108,6 +119,7 @@ func _hide_hud_hint() -> void:
 	if hud and hud.has_method("hide_hint"):
 		hud.hide_hint()
 
+# ---------------------------------------------------------------------------
 func _update_facing(dir: Vector2) -> void:
 	if abs(dir.x) > abs(dir.y):
 		facing = Facing.RIGHT if dir.x > 0 else Facing.LEFT
@@ -128,6 +140,22 @@ func _play_idle() -> void:
 	if sprite.sprite_frames.has_animation(anim_name) and sprite.animation != anim_name:
 		sprite.play(anim_name)
 
+# ---------------------------------------------------------------------------
+# PointLight2D reacts to reality — Echo = visible lantern
+func _on_reality_changed(_r: Variant) -> void:
+	if not is_instance_valid(point_light):
+		return
+	if RealityManager.is_echo():
+		point_light.visible = true
+		var tw := create_tween()
+		tw.tween_property(point_light, "energy", 1.6, RealityManager.FADE_TIME)
+	else:
+		var tw := create_tween()
+		tw.tween_property(point_light, "energy", 0.0, RealityManager.FADE_TIME)
+		await tw.finished
+		point_light.visible = false
+
+# ---------------------------------------------------------------------------
 func die() -> void:
 	if dead:
 		return
@@ -147,7 +175,7 @@ func die() -> void:
 		global_position = data.pos
 		RealityManager.current = data.reality
 		GameState.letters_collected = data.letters.duplicate()
-		GameState.puzzle_states = data.puzzles.duplicate()
+		GameState.puzzle_states    = data.puzzles.duplicate()
 		has_key = false
 	overlay.play_fade_in()
 	await overlay.fade_in_done
