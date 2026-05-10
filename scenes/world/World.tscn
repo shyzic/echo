@@ -1,0 +1,31 @@
+[gd_scene load_steps=7 format=3 uid="uid://c00000000002"]
+
+[ext_resource type="Script" path="res://scripts/world/World.gd" id="1_world"]
+[ext_resource type="TileSet" path="res://assets/tiles/tileset.tres" id="2_tileset"]
+[ext_resource type="PackedScene" uid="uid://c00000000003" path="res://scenes/entities/Player.tscn" id="3_player"]
+[ext_resource type="PackedScene" uid="uid://c00000000020" path="res://scenes/effects/RealityFade.tscn" id="4_fade"]
+[ext_resource type="PackedScene" uid="uid://c00000000031" path="res://scenes/ui/HUD.tscn" id="5_hud"]
+[ext_resource type="PackedScene" uid="uid://c00000000030" path="res://scenes/ui/DialogueBox.tscn" id="6_dialoguebox"]
+
+[node name="World" type="Node2D"]
+y_sort_enabled = true
+script = ExtResource("1_world")
+
+[node name="CanvasModulate" type="CanvasModulate" parent="."]
+color = Color(1, 1, 1, 1)
+
+[node name="GroundTilemap" type="TileMapLayer" parent="."]
+tile_set = ExtResource("2_tileset")
+z_index = -10
+
+[node name="EntitiesContainer" type="Node2D" parent="."]
+y_sort_enabled = true
+
+[node name="Player" parent="EntitiesContainer" instance=ExtResource("3_player")]
+position = Vector2(320, 320)
+
+[node name="RealityFade" parent="." instance=ExtResource("4_fade")]
+
+[node name="HUD" parent="." instance=ExtResource("5_hud")]
+
+[node name="DialogueBox" parent="." instance=ExtResource("6_dialoguebox")]

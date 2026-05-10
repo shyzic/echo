@@ -1,0 +1,45 @@
+[gd_scene load_steps=2 format=3 uid="uid://c00000000031"]
+
+[ext_resource type="Script" path="res://scripts/ui/HUD.gd" id="1_hud"]
+
+[node name="HUD" type="CanvasLayer"]
+script = ExtResource("1_hud")
+
+[node name="RealityIndicator" type="Label" parent="."]
+anchors_preset = -1
+anchor_left = 0.0
+anchor_top = 0.0
+anchor_right = 0.0
+anchor_bottom = 0.0
+offset_left = 8.0
+offset_top = 6.0
+offset_right = 120.0
+offset_bottom = 24.0
+text = "○ МИР"
+
+[node name="LetterCounter" type="Label" parent="."]
+anchors_preset = -1
+anchor_left = 1.0
+anchor_top = 0.0
+anchor_right = 1.0
+anchor_bottom = 0.0
+offset_left = -80.0
+offset_top = 6.0
+offset_right = -8.0
+offset_bottom = 24.0
+text = "✉ 0/6"
+horizontal_alignment = 2
+
+[node name="InteractHint" type="Label" parent="."]
+anchors_preset = -1
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -100.0
+offset_top = -40.0
+offset_right = 100.0
+offset_bottom = -24.0
+text = ""
+horizontal_alignment = 1
+visible = false

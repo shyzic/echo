@@ -1,0 +1,11 @@
+[gd_scene load_steps=3 format=3 uid="uid://c00000000016"]
+
+[ext_resource type="Script" path="res://scripts/entities/Bridge.gd" id="1_bridge"]
+[ext_resource type="Texture2D" path="res://assets/sprites/bridge_placeholder.png" id="2_bridge"]
+
+[node name="Bridge" type="Node2D"]
+script = ExtResource("1_bridge")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("2_bridge")
+offset = Vector2(0, -8)
