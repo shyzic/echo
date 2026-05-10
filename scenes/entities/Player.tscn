@@ -1,6 +1,6 @@
-[gd_scene load_steps=30 format=3 uid="uid://c00000000003"]
+[gd_scene load_steps=29 format=3 uid="uid://c00000000003"]
 
-[ext_resource type="Script" path="res://scripts/entities/Player.gd" id="1_player"]
+[ext_resource type="Script" uid="uid://bq2x4bd67pwio" path="res://scripts/entities/Player.gd" id="1_player"]
 [ext_resource type="Texture2D" uid="uid://dqfsfphjl0ocv" path="res://assets/sprites/player/На лево/Frame 4 .png" id="2_gpcb7"]
 [ext_resource type="Texture2D" uid="uid://dsyi8refqolsi" path="res://assets/sprites/player/Вниз/Frame1.png" id="2_j1g85"]
 [ext_resource type="Texture2D" uid="uid://bsjpwk4t3ine1" path="res://assets/sprites/player_placeholder.png" id="2_player"]
@@ -19,59 +19,6 @@
 [ext_resource type="Texture2D" uid="uid://dho20rinbpbxf" path="res://assets/sprites/player/Вверх/Frame1.png" id="14_n8b1g"]
 [ext_resource type="Texture2D" uid="uid://2wj814wsxigo" path="res://assets/sprites/player/Вверх/Frame3.png" id="15_ud5pm"]
 [ext_resource type="Texture2D" uid="uid://d5ef4yk6iffe" path="res://assets/sprites/player/Вверх/Frame4.png" id="16_0v6ls"]
-
-[sub_resource type="GDScript" id="GDScript_24gqh"]
-script/source = "extends CharacterBody2D
-
-@export var speed = 120
-
-var last_direction = \"down\"
-
-func _physics_process(delta):
-
-	var direction = Vector2.ZERO
-
-	if Input.is_action_pressed(\"ui_right\"):
-		direction.x += 1
-
-	if Input.is_action_pressed(\"ui_left\"):
-		direction.x -= 1
-
-	if Input.is_action_pressed(\"ui_down\"):
-		direction.y += 1
-
-	if Input.is_action_pressed(\"ui_up\"):
-		direction.y -= 1
-
-	velocity = direction.normalized() * speed
-	move_and_slide()
-
-	handle_animation(direction)
-
-
-func handle_animation(direction):
-
-	var sprite = $AnimatedSprite2D
-
-	if direction == Vector2.ZERO:
-
-		sprite.play(\"idle_\" + last_direction)
-		return
-
-	if direction.x > 0:
-		last_direction = \"right\"
-
-	elif direction.x < 0:
-		last_direction = \"left\"
-
-	elif direction.y > 0:
-		last_direction = \"down\"
-
-	elif direction.y < 0:
-		last_direction = \"up\"
-
-	sprite.play(\"walk_\" + last_direction)
-"
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_74x3x"]
 atlas = ExtResource("2_j1g85")

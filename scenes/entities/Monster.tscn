@@ -1,7 +1,7 @@
 [gd_scene load_steps=5 format=3 uid="uid://c00000000040"]
 
 [ext_resource type="Script" path="res://scripts/entities/Monster.gd" id="1_monster"]
-[ext_resource type="Texture2D" path="res://assets/sprites/player_placeholder.png" id="2_monster"]
+[ext_resource type="Texture2D" path="res://assets/sprites/skeleton.png" id="2_monster"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_body"]
 size = Vector2(14, 8)
@@ -17,7 +17,9 @@ script = ExtResource("1_monster")
 [node name="Sprite2D" type="Sprite2D" parent="."]
 texture = ExtResource("2_monster")
 offset = Vector2(0, -24)
-modulate = Color(0.8, 0.2, 0.2, 1)
+hframes = 10
+vframes = 6
+frame = 0
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 position = Vector2(0, -4)
