@@ -3,10 +3,9 @@ extends Area2D
 @export var dialogue_key: String = "mother_intro"
 @export var entity_id: String = ""
 
-var _talked := false
-
-func get_hint() -> String: return "Поговорить"
+func get_hint() -> String:
+	return "Поговорить с мамой"
 
 func interact(_player: Node) -> void:
+	GameState.hut_visited = true
 	DialogueManager.start(dialogue_key)
-	_talked = true

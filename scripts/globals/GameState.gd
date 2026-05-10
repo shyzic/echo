@@ -11,6 +11,10 @@ var anchors_visited: Array[String] = []
 var play_time_seconds: float = 0.0
 var hidden_endings_qualifying: bool = false
 
+# Narrative gates
+var hut_visited: bool = false
+var diary_read: bool = false
+
 const TOTAL_LETTERS: int = 6
 
 func _process(delta: float) -> void:
@@ -30,3 +34,5 @@ func reset() -> void:
 	puzzle_states.clear()
 	anchors_visited.clear()
 	play_time_seconds = 0.0
+	hut_visited = false
+	diary_read = false

@@ -18,6 +18,7 @@ const SCENE_PATHS := {
 	"Monster":     "res://scenes/entities/Monster.tscn",
 	"Npc":         "res://scenes/entities/Npc.tscn",
 	"HeartShrine": "res://scenes/entities/HeartShrine.tscn",
+	"Diary":       "res://scenes/entities/Diary.tscn",
 }
 
 var _scenes: Dictionary = {}
@@ -30,6 +31,7 @@ func _ready() -> void:
 	_apply_tiles(gen.grid)
 	_spawn_all(gen)
 	_spawn_puzzles(gen)
+	_spawn_border()
 	player.position = _wp(gen.pois.HOME)
 
 func _preload_scenes() -> void:
@@ -61,11 +63,16 @@ func _spawn_all(gen: Dictionary) -> void:
 		npc.dialogue_key = "mother_intro"
 		npc.entity_id = "mother"
 
+	# Diary on the table inside hut
+	var diary := _spawn("Diary", gen.pois.HUT + Vector2i(2, 1))
+	if diary:
+		diary.entity_id = "father_diary"
+
 	var shrine := _spawn("HeartShrine", gen.pois.HEART)
 	if shrine:
 		shrine.entity_id = "heart_shrine"
 
-	# Monsters from ProcGen
+	# Monsters
 	for spawn in gen.monster_spawns:
 		var m := _spawn("Monster", spawn.pos)
 		if m:
@@ -83,23 +90,18 @@ func _spawn_puzzles(gen: Dictionary) -> void:
 		var id: String = puzzle.id
 		match puzzle.type:
 			"RealityBridgeGate":
-				# Chasm kills in Light, Bridge covers it in Echo
 				var chasm := _spawn("Chasm", pos)
 				var bridge := _spawn("Bridge", pos)
 				if chasm: chasm.entity_id = id + "_chasm"
 				if bridge: bridge.entity_id = id + "_bridge"
 				GameState.puzzle_states[id] = false
-
 			"KeyLockGate":
-				# Door blocks path, Key is nearby
 				var door := _spawn("Door", pos)
 				var key := _spawn("Key", pos + Vector2i(4, 0))
 				if door: door.entity_id = id + "_door"
 				if key:  key.entity_id  = id + "_key"
 				GameState.puzzle_states[id] = false
-
 			"EchoSwitchesGate":
-				# Two Echo-only switches must both be activated to open door
 				var door := _spawn("Door", pos)
 				var sw1  := _spawn("Switch", pos + Vector2i(-4, -4))
 				var sw2  := _spawn("Switch", pos + Vector2i( 4, -4))
@@ -111,6 +113,49 @@ func _spawn_puzzles(gen: Dictionary) -> void:
 					gate.setup([sw1, sw2], door)
 					entities.add_child(gate)
 				GameState.puzzle_states[id] = false
+
+func _spawn_border() -> void:
+	# 4 invisible StaticBody2D walls outside map edges (hard collision)
+	var mw := Const.MAP_W_TILES * Const.TILE_SIZE
+	var mh := Const.MAP_H_TILES * Const.TILE_SIZE
+	_add_border_wall(Vector2(mw / 2.0, -16),      Vector2(mw + 64, 32))  # top
+	_add_border_wall(Vector2(mw / 2.0, mh + 16),  Vector2(mw + 64, 32))  # bottom
+	_add_border_wall(Vector2(-16, mh / 2.0),       Vector2(32, mh + 64)) # left
+	_add_border_wall(Vector2(mw + 16, mh / 2.0),   Vector2(32, mh + 64)) # right
+
+	# Dense tree ring along the actual border tiles (visual dark forest)
+	var w := Const.MAP_W_TILES
+	var h := Const.MAP_H_TILES
+	for x in w:
+		_spawn_border_tree(Vector2i(x, 0))
+		_spawn_border_tree(Vector2i(x, 1))
+		_spawn_border_tree(Vector2i(x, h - 1))
+		_spawn_border_tree(Vector2i(x, h - 2))
+	for y in range(2, h - 2):
+		_spawn_border_tree(Vector2i(0, y))
+		_spawn_border_tree(Vector2i(1, y))
+		_spawn_border_tree(Vector2i(w - 1, y))
+		_spawn_border_tree(Vector2i(w - 2, y))
+
+func _spawn_border_tree(tile_pos: Vector2i) -> void:
+	if not _scenes.has("Tree"):
+		return
+	var node: Node = _scenes["Tree"].instantiate()
+	node.position = _wp(tile_pos)
+	# Darken border trees to indicate impenetrable forest
+	if node.has_node("Sprite2D"):
+		node.get_node("Sprite2D").modulate = Color(0.3, 0.35, 0.3, 1.0)
+	entities.add_child(node)
+
+func _add_border_wall(pos: Vector2, size: Vector2) -> void:
+	var body := StaticBody2D.new()
+	body.position = pos
+	var shape := CollisionShape2D.new()
+	var rect := RectangleShape2D.new()
+	rect.size = size
+	shape.shape = rect
+	body.add_child(shape)
+	entities.add_child(body)
 
 func _spawn(type: String, tile_pos: Vector2i) -> Node:
 	if not _scenes.has(type):

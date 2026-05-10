@@ -7,15 +7,20 @@ var _activated := false
 @onready var sprite: Sprite2D = $Sprite2D
 
 func _ready() -> void:
-	# Pulse animation
 	var tw := create_tween().set_loops()
 	tw.tween_property(sprite, "modulate:a", 0.3, 1.2)
 	tw.tween_property(sprite, "modulate:a", 1.0, 1.2)
 
-func get_hint() -> String: return "Прикоснуться к сердцу леса"
+func get_hint() -> String:
+	if not GameState.diary_read:
+		return "Сначала найди хижину отца"
+	return "Прикоснуться к сердцу леса"
 
 func interact(_player: Node) -> void:
 	if _activated:
+		return
+	if not GameState.diary_read:
+		DialogueManager.start("heart_locked")
 		return
 	_activated = true
 	DialogueManager.start("father_climax", _on_climax_done)
