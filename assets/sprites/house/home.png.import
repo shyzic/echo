@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bfgu6nrxjpykk"
-path="res://.godot/imported/призрак_пример1.png-6982d48282dedc6cacab752e29274f53.ctex"
+uid="uid://j8jghsvw8qed"
+path="res://.godot/imported/home.png-96044ca327f35061aa8ef480899d20cc.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/ghost/Призрак_эхо_налего/призрак_пример1.png"
-dest_files=["res://.godot/imported/призрак_пример1.png-6982d48282dedc6cacab752e29274f53.ctex"]
+source_file="res://assets/sprites/house/home.png"
+dest_files=["res://.godot/imported/home.png-96044ca327f35061aa8ef480899d20cc.ctex"]
 
 [params]
 

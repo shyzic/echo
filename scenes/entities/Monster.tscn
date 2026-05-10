@@ -1,7 +1,7 @@
 [gd_scene load_steps=5 format=3 uid="uid://c00000000040"]
 
 [ext_resource type="Script" uid="uid://bebymgu3oyjfh" path="res://scripts/entities/Monster.gd" id="1_monster"]
-[ext_resource type="Texture2D" uid="uid://cwgc6k7x17cp" path="res://assets/sprites/ghost/Призрак_эхо_крик/призрак_пример.png" id="2_fh81d"]
+[ext_resource type="Texture2D" uid="uid://d0d6o1lv5qn1o" path="res://assets/sprites/ghost/Ghost.png" id="2_fh81d"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_body"]
 size = Vector2(14, 8)
@@ -13,7 +13,8 @@ collision_layer = 4
 script = ExtResource("1_monster")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
-scale = Vector2(0.275, 0.21875)
+position = Vector2(-1, 5)
+scale = Vector2(0.36875, 0.409668)
 texture = ExtResource("2_fh81d")
 offset = Vector2(0, -24)
 

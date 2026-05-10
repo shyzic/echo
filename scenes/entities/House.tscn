@@ -1,8 +1,10 @@
-[gd_scene load_steps=10 format=3 uid="uid://c00000000102"]
+[gd_scene load_steps=12 format=3 uid="uid://c00000000102"]
 
 [ext_resource type="Script" uid="uid://bhki3ors0e5c7" path="res://scripts/entities/House.gd" id="1_house"]
 [ext_resource type="Texture2D" uid="uid://cp5syp65lfkmf" path="res://assets/sprites/tree_placeholder.png" id="2_wall"]
+[ext_resource type="Texture2D" uid="uid://j8jghsvw8qed" path="res://assets/sprites/house/home.png" id="3_qf5by"]
 [ext_resource type="Texture2D" uid="uid://jm22x4msw6yu" path="res://assets/sprites/stone_placeholder.png" id="3_roof"]
+[ext_resource type="Texture2D" uid="uid://dtb3exqyvo7oa" path="res://assets/sprites/house/house_interior.png" id="4_w64mx"]
 
 [sub_resource type="RectangleShape2D" id="WallTop"]
 size = Vector2(100, 6)
@@ -34,17 +36,17 @@ texture = ExtResource("2_wall")
 [node name="Roof" type="Sprite2D" parent="."]
 modulate = Color(0.4, 0.28, 0.18, 1)
 z_index = 3
-position = Vector2(0, -72)
-scale = Vector2(3.6, 2)
-texture = ExtResource("3_roof")
+position = Vector2(0, -97)
+scale = Vector2(2.45, 2.58553)
+texture = ExtResource("3_qf5by")
 
 [node name="Interior" type="Node2D" parent="."]
 
 [node name="Floor" type="Sprite2D" parent="Interior"]
 modulate = Color(0.6, 0.5, 0.36, 1)
-position = Vector2(0, -52)
-scale = Vector2(2.5, 2.5)
-texture = ExtResource("2_wall")
+position = Vector2(0.749998, -73.375)
+scale = Vector2(0.25651, 0.237413)
+texture = ExtResource("4_w64mx")
 
 [node name="DoorMarker" type="Sprite2D" parent="."]
 modulate = Color(0.3, 0.2, 0.1, 1)

@@ -45,6 +45,9 @@ func _ready() -> void:
 	_spawn_puzzles(gen)
 	_spawn_border()
 	player.position = _wp(gen.pois.HOME) + Vector2(64, 16)
+	
+	# Create an initial checkpoint at the house in case the player dies before finding an anchor
+	SaveManager.save_checkpoint(player.position, RealityManager.current)
 
 var _reachable_tiles_cache: Array = []
 

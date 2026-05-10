@@ -7,15 +7,15 @@ extends Area2D
 
 var _pulse_tween: Tween
 
-func _ready() -> void:
-	_start_pulse()
+#func _ready() -> void:
+	#_start_pulse()
 
-func _start_pulse() -> void:
-	if not is_instance_valid(sprite):
-		return
-	_pulse_tween = create_tween().set_loops()
-	_pulse_tween.tween_property(sprite, "modulate:a", 0.4, 0.9)
-	_pulse_tween.tween_property(sprite, "modulate:a", 1.0, 0.9)
+#func _start_pulse() -> void:
+	#if not is_instance_valid(sprite):
+		#return
+	#_pulse_tween = create_tween().set_loops()
+	#_pulse_tween.tween_property(sprite, "modulate:a", 0.4, 0.9)
+	#_pulse_tween.tween_property(sprite, "modulate:a", 1.0, 0.9)
 
 func _process(_delta: float) -> void:
 	if reality_filter == "both":
