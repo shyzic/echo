@@ -1,5 +1,7 @@
 extends Node2D
 
+@export var entity_id: String = ""
+
 @onready var roof: Sprite2D     = $Roof
 @onready var interior: Node2D   = $Interior
 @onready var trigger: Area2D    = $InteriorTrigger
