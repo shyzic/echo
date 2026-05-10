@@ -32,10 +32,51 @@ func _ready() -> void:
 	var gen := ProcGen.generate(GameState.current_seed)
 	GameState.current_seed = gen.seed
 	_apply_tiles(gen.grid)
+	_reachable_tiles_cache = _calc_reachable_from_home(gen)
 	_spawn_all(gen)
 	_spawn_puzzles(gen)
 	_spawn_border()
 	player.position = _wp(gen.pois.HOME) + Vector2(64, 16)
+
+var _reachable_tiles_cache: Array = []
+
+func _calc_reachable_from_home(gen: Dictionary) -> Array:
+	var visited := {}
+	var queue: Array = [gen.pois.HOME]
+	visited[gen.pois.HOME] = true
+	var reachable := []
+	
+	# Treat all puzzle doors as blocked for the initial reachable area
+	var blocked := {}
+	for p in gen.puzzle_spawns:
+		for dy in [-1, 0, 1]:
+			for dx in [-1, 0, 1]:
+				blocked[p.pos + Vector2i(dx, dy)] = true
+
+	while queue.size() > 0:
+		var curr: Vector2i = queue.pop_front()
+		reachable.append(curr)
+		var dirs: Array[Vector2i] = [Vector2i.UP, Vector2i.DOWN, Vector2i.LEFT, Vector2i.RIGHT]
+		for d in dirs:
+			var nxt = curr + d
+			if nxt.x < 0 or nxt.y < 0 or nxt.x >= gen.grid[0].size() or nxt.y >= gen.grid.size(): continue
+			if nxt in visited: continue
+			if nxt in blocked: continue
+			if gen.grid[nxt.y][nxt.x] != Const.TILE_PATH: continue
+			visited[nxt] = true
+			queue.append(nxt)
+	return reachable
+
+func _get_random_reachable_tile(center: Vector2i, min_dist: float, max_dist: float) -> Vector2i:
+	var valid := []
+	for pos in _reachable_tiles_cache:
+		var d = center.distance_to(pos)
+		if d >= min_dist and d <= max_dist:
+			valid.append(pos)
+	if valid.size() > 0:
+		valid.shuffle()
+		return valid[0]
+	return center + Vector2i(0, 1) # fallback
 
 func _preload_scenes() -> void:
 	for key in SCENE_PATHS:
@@ -54,7 +95,8 @@ func _spawn_all(gen: Dictionary) -> void:
 
 	var letter_spawns: Array = gen.letter_spawns
 	for i in letter_spawns.size():
-		var node = _spawn("Letter", letter_spawns[i])
+		var valid_pos = _get_random_reachable_tile(letter_spawns[i], 0.0, 100.0)
+		var node = _spawn("Letter", valid_pos)
 		if node:
 			node.entity_id = "letter_%d" % (i + 1)
 
@@ -108,34 +150,35 @@ func _spawn_puzzles(gen: Dictionary) -> void:
 	for puzzle in gen.puzzle_spawns:
 		var pos: Vector2i = puzzle.pos
 		var id: String    = puzzle.id
+		
+		# For puzzle items, we find a reachable tile on the player's side
+		var item_pos1 = _get_random_reachable_tile(pos, 2.0, 6.0)
+		var item_pos2 = _get_random_reachable_tile(pos, 2.0, 6.0)
+		
 		match puzzle.type:
 			"RealityBridgeGate":
-				# Chasm kills in Light; Bridge is safe path in Echo.
-				# Barrier forces player to engage (can't walk around).
 				var chasm  := _spawn("Chasm",  pos)
 				var bridge := _spawn("Bridge", pos)
 				if chasm:  chasm.entity_id  = id + "_chasm"
 				if bridge: bridge.entity_id = id + "_bridge"
-				_add_puzzle_barrier(pos)
+				_add_puzzle_barrier(pos, gen.grid)
 				GameState.puzzle_states[id] = false
 
 			"KeyLockGate":
-				# Door blocks path; key is placed nearby.
 				var door := _spawn("Door", pos)
-				var key  := _spawn("Key",  pos + Vector2i(4, 0))
+				var key  := _spawn("Key",  item_pos1)
 				if door: door.entity_id = id + "_door"
 				if key:  key.entity_id  = id + "_key"
-				_add_puzzle_barrier(pos)
+				_add_puzzle_barrier(pos, gen.grid)
 				GameState.puzzle_states[id] = false
 
 			"EchoSwitchesGate":
-				# Door can only be opened by activating both switches in Echo.
 				var door := _spawn("Door",   pos)
-				var sw1  := _spawn("Switch", pos + Vector2i(-4, -4))
-				var sw2  := _spawn("Switch", pos + Vector2i( 4, -4))
+				var sw1  := _spawn("Switch", item_pos1)
+				var sw2  := _spawn("Switch", item_pos2)
 				if door:
 					door.entity_id   = id + "_door"
-					door.switch_locked = true     # disable manual key-open
+					door.switch_locked = true
 					door.requires_key  = false
 				if sw1: sw1.entity_id = id + "_sw1"
 				if sw2: sw2.entity_id = id + "_sw2"
@@ -143,29 +186,67 @@ func _spawn_puzzles(gen: Dictionary) -> void:
 					var gate := EchoSwitchGate.new()
 					gate.setup([sw1, sw2], door)
 					entities.add_child(gate)
-				_add_puzzle_barrier(pos)
+				_add_puzzle_barrier(pos, gen.grid)
 				GameState.puzzle_states[id] = false
+				
+		# After placing the puzzle items, we "unlock" this door and expand the reachable area
+		# so the next puzzles can use the space behind this door.
+		var new_reachable = _expand_reachable_from(pos, gen)
+		for r in new_reachable:
+			if not r in _reachable_tiles_cache:
+				_reachable_tiles_cache.append(r)
 
-# Add an invisible + cross barrier around a puzzle tile.
-# Each arm spans ARM_TILES in one direction, with a single-tile gap at center for the door.
-func _add_puzzle_barrier(tile_pos: Vector2i) -> void:
+func _expand_reachable_from(start_pos: Vector2i, gen: Dictionary) -> Array:
+	var visited := {}
+	for r in _reachable_tiles_cache:
+		visited[r] = true
+	var queue: Array = [start_pos]
+	visited[start_pos] = true
+	var reachable := []
+	var blocked := {}
+	for p in gen.puzzle_spawns:
+		if p.pos != start_pos and not p.pos in _reachable_tiles_cache:
+			for dy in [-1, 0, 1]:
+				for dx in [-1, 0, 1]:
+					blocked[p.pos + Vector2i(dx, dy)] = true
+
+	while queue.size() > 0:
+		var curr: Vector2i = queue.pop_front()
+		reachable.append(curr)
+		var dirs: Array[Vector2i] = [Vector2i.UP, Vector2i.DOWN, Vector2i.LEFT, Vector2i.RIGHT]
+		for d in dirs:
+			var nxt = curr + d
+			if nxt.x < 0 or nxt.y < 0 or nxt.x >= gen.grid[0].size() or nxt.y >= gen.grid.size(): continue
+			if nxt in visited: continue
+			if nxt in blocked: continue
+			if gen.grid[nxt.y][nxt.x] != Const.TILE_PATH: continue
+			visited[nxt] = true
+			queue.append(nxt)
+	return reachable
+
+# Add a localized barrier and dense forest ring around the puzzle
+func _add_puzzle_barrier(tile_pos: Vector2i, grid: Array) -> void:
 	var ts   := float(Const.TILE_SIZE)
-	var arm  := 22.0 * ts      # arm length (tiles → pixels)
-	var gap  := ts * 1.6       # gap at door (player passes through here)
-	var th   := ts * 1.4       # wall thickness
 	var c    := _wp(tile_pos)
 
-	var half_arm := arm * 0.5
-	var half_gap := gap * 0.5
-
-	# Horizontal fence — left arm
-	_add_border_wall(c + Vector2(-(half_gap + half_arm), 0.0), Vector2(arm, th))
-	# Horizontal fence — right arm
-	_add_border_wall(c + Vector2( (half_gap + half_arm), 0.0), Vector2(arm, th))
-	# Vertical fence — upper arm
-	_add_border_wall(c + Vector2(0.0, -(half_gap + half_arm)), Vector2(th, arm))
-	# Vertical fence — lower arm
-	_add_border_wall(c + Vector2(0.0,  (half_gap + half_arm)), Vector2(th, arm))
+	# 1. Spawn 4 diagonal blocks to form an X barrier.
+	# This leaves the Top, Bottom, Left, and Right approach paths completely open!
+	var b_size = Vector2(ts * 0.5, ts * 0.5)
+	_add_border_wall(c + Vector2(-ts, -ts), b_size)
+	_add_border_wall(c + Vector2( ts, -ts), b_size)
+	_add_border_wall(c + Vector2(-ts,  ts), b_size)
+	_add_border_wall(c + Vector2( ts,  ts), b_size)
+			
+	# 2. Spawn a dense forest ring (radius 2 to 6) on non-path tiles to prevent bypass
+	for dy in range(-6, 7):
+		for dx in range(-6, 7):
+			var dist = Vector2(dx, dy).length()
+			if dist >= 2.0 and dist <= 6.5:
+				var px = tile_pos.x + dx
+				var py = tile_pos.y + dy
+				if px > 0 and py > 0 and px < grid[0].size() and py < grid.size():
+					if grid[py][px] != Const.TILE_PATH:
+						_spawn_border_tree(Vector2i(px, py))
 
 # ---------------------------------------------------------------------------
 func _spawn_border() -> void:

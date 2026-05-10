@@ -1,7 +1,7 @@
 [gd_scene load_steps=4 format=3 uid="uid://c00000000004"]
 
-[ext_resource type="Script" path="res://scripts/entities/Tree.gd" id="1_tree"]
-[ext_resource type="Texture2D" path="res://assets/sprites/tree_placeholder.png" id="2_tree"]
+[ext_resource type="Script" uid="uid://bjytetojydusn" path="res://scripts/entities/Tree.gd" id="1_tree"]
+[ext_resource type="Texture2D" uid="uid://dbb46jsma5v5c" path="res://assets/sprites/Tree.png" id="2_n83qi"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_trunk"]
 size = Vector2(14, 8)
@@ -10,8 +10,12 @@ size = Vector2(14, 8)
 script = ExtResource("1_tree")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
-texture = ExtResource("2_tree")
+position = Vector2(-4.76837e-07, -1.90735e-06)
+scale = Vector2(0.438165, 0.515385)
+texture = ExtResource("2_n83qi")
 offset = Vector2(0, -32)
+region_enabled = true
+region_rect = Rect2(0, 0, 47.374, 65.0003)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 position = Vector2(0, -4)

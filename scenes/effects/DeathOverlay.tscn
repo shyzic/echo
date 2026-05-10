@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://c00000000032"]
 
-[ext_resource type="Script" path="res://scripts/effects/DeathOverlay.gd" id="1_deathoverlay"]
+[ext_resource type="Script" uid="uid://bn6x2manrlpd3" path="res://scripts/effects/DeathOverlay.gd" id="1_deathoverlay"]
 
 [node name="DeathOverlay" type="CanvasLayer"]
 layer = 128
@@ -13,7 +13,8 @@ anchor_bottom = 1.0
 color = Color(0, 0, 0, 0)
 
 [node name="Message" type="Label" parent="."]
-anchors_preset = -1
+modulate = Color(1, 1, 1, 0)
+anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
@@ -24,4 +25,3 @@ offset_right = 120.0
 offset_bottom = 16.0
 text = "Эхо возвращается…"
 horizontal_alignment = 1
-modulate = Color(1, 1, 1, 0)

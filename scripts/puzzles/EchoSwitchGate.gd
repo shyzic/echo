@@ -13,6 +13,13 @@ func setup(switches: Array, gate: Node) -> void:
 
 func _on_switch_activated(_sw: Node) -> void:
 	# Check if all switches are triggered
-	var done := _switches.all(func(s): return s._triggered)
+	var count := 0
+	for s in _switches:
+		if s._triggered: count += 1
+		
+	if is_instance_valid(_gate) and _gate.has_method("update_switch_progress"):
+		_gate.update_switch_progress(count, _switches.size())
+
+	var done := (count == _switches.size())
 	if done and is_instance_valid(_gate) and _gate.has_method("open"):
 		_gate.open()

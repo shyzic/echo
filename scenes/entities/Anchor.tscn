@@ -1,7 +1,7 @@
 [gd_scene load_steps=4 format=3 uid="uid://c00000000011"]
 
-[ext_resource type="Script" path="res://scripts/entities/Anchor.gd" id="1_anchor"]
-[ext_resource type="Texture2D" path="res://assets/sprites/anchor_placeholder.png" id="2_anchor"]
+[ext_resource type="Script" uid="uid://bcogmi8xtr4br" path="res://scripts/entities/Anchor.gd" id="1_anchor"]
+[ext_resource type="Texture2D" uid="uid://cxns7hvpypjby" path="res://assets/sprites/anchor_placeholder.png" id="2_anchor"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_anchor"]
 size = Vector2(14, 14)

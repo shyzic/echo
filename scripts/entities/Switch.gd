@@ -15,7 +15,9 @@ func _process(_delta: float) -> void:
 		if child is CollisionShape2D:
 			child.disabled = not in_echo
 
-func get_hint() -> String: return "Активировать переключатель"
+func get_hint() -> String:
+	if _triggered: return "Рычаг активирован"
+	return "Активировать переключатель"
 
 func interact(_player: Node) -> void:
 	if _triggered:
