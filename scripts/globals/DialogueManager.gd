@@ -31,6 +31,7 @@ func play_dialogue(key: String, complete_cb: Callable = Callable()) -> void:
 	current_index = 0
 	on_complete = complete_cb
 	active = true
+	AudioManager.play("dialogue")
 	dialogue_started.emit()
 
 func play_letter(key: String, complete_cb: Callable = Callable()) -> void:
@@ -40,6 +41,7 @@ func play_letter(key: String, complete_cb: Callable = Callable()) -> void:
 	current_index = 0
 	on_complete = complete_cb
 	active = true
+	AudioManager.play("dialogue")
 	dialogue_started.emit()
 
 func advance() -> void:
@@ -47,6 +49,7 @@ func advance() -> void:
 	if current_index >= current_lines.size():
 		end()
 	else:
+		AudioManager.play("dialogue")
 		line_advanced.emit(current_index)
 
 func start(key: String, complete_cb: Callable = Callable()) -> void:

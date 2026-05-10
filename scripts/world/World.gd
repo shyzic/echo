@@ -5,6 +5,9 @@ extends Node2D
 @onready var player: CharacterBody2D = $EntitiesContainer/Player
 @onready var canvas_modulate: CanvasModulate = $CanvasModulate
 
+@export var echo_ground_texture: Texture2D
+var _light_ground_texture: Texture2D
+
 const SCENE_PATHS := {
 	"Tree":        "res://scenes/entities/Tree.tscn",
 	"Stone":       "res://scenes/entities/Stone.tscn",
@@ -27,6 +30,11 @@ const SCENE_PATHS := {
 var _scenes: Dictionary = {}
 
 func _ready() -> void:
+	if ground and ground.tile_set:
+		var source = ground.tile_set.get_source(0) as TileSetAtlasSource
+		if source:
+			_light_ground_texture = source.texture
+			
 	RealityManager.reality_changed.connect(_on_reality_changed)
 	_preload_scenes()
 	var gen := ProcGen.generate(GameState.current_seed)
@@ -312,6 +320,14 @@ func _wp(tile_pos: Vector2i) -> Vector2:
 
 # ---------------------------------------------------------------------------
 func _on_reality_changed(_new: Variant) -> void:
+	if echo_ground_texture and _light_ground_texture and ground and ground.tile_set:
+		var source = ground.tile_set.get_source(0) as TileSetAtlasSource
+		if source:
+			if RealityManager.is_echo():
+				source.texture = echo_ground_texture
+			else:
+				source.texture = _light_ground_texture
+				
 	var target := Const.TINT_ECHO if RealityManager.is_echo() else Const.TINT_LIGHT
 	var tw := create_tween()
 	tw.tween_property(canvas_modulate, "color", target, RealityManager.FADE_TIME)

@@ -1,22 +1,28 @@
-[gd_scene load_steps=4 format=3 uid="uid://c00000000004"]
+[gd_scene load_steps=5 format=3 uid="uid://c00000000004"]
 
 [ext_resource type="Script" uid="uid://bjytetojydusn" path="res://scripts/entities/Tree.gd" id="1_tree"]
-[ext_resource type="Texture2D" uid="uid://dbb46jsma5v5c" path="res://assets/sprites/Tree.png" id="2_n83qi"]
+[ext_resource type="Texture2D" uid="uid://b8wfn477elw48" path="res://assets/sprites/environment/tree_echo.png" id="2_33srv"]
+[ext_resource type="Texture2D" uid="uid://d35gbrrp2nb54" path="res://assets/sprites/trees.png" id="2_n83qi"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_trunk"]
-size = Vector2(14, 8)
+size = Vector2(6, 11.5)
 
 [node name="Tree" type="StaticBody2D"]
 script = ExtResource("1_tree")
+echo_texture = ExtResource("2_33srv")
+echo_frame = 3
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
-position = Vector2(-4.76837e-07, -1.90735e-06)
+position = Vector2(2.38419e-07, -5)
 scale = Vector2(0.438165, 0.515385)
 texture = ExtResource("2_n83qi")
 offset = Vector2(0, -32)
+hframes = 8
+vframes = 2
+frame = 7
 region_enabled = true
-region_rect = Rect2(0, 0, 47.374, 65.0003)
+region_rect = Rect2(-1.88499, -1.43366, 514.114, 226.217)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-position = Vector2(0, -4)
+position = Vector2(0, -6.25)
 shape = SubResource("RectangleShape2D_trunk")

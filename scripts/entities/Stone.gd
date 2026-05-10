@@ -2,13 +2,17 @@ extends StaticBody2D
 
 @export var entity_id: String = ""
 @export var reality_filter: String = "both"
+@export var echo_texture: Texture2D
 
 # Echo tint: cracked, bloodstone look
 const ECHO_TINT := Color(0.38, 0.22, 0.22, 1.0)
 
 @onready var sprite: Sprite2D = $Sprite2D
+var _light_texture: Texture2D
 
 func _ready() -> void:
+	if sprite:
+		_light_texture = sprite.texture
 	RealityManager.reality_changed.connect(_on_reality_changed)
 	_on_reality_changed(RealityManager.current)
 
@@ -26,8 +30,13 @@ func _on_reality_changed(_r: Variant) -> void:
 	if not is_instance_valid(sprite):
 		return
 	if RealityManager.is_echo():
-		var tw := create_tween()
-		tw.tween_property(sprite, "modulate", ECHO_TINT, 0.4)
+		if echo_texture:
+			sprite.texture = echo_texture
+		else:
+			var tw := create_tween()
+			tw.tween_property(sprite, "modulate", ECHO_TINT, 0.4)
 	else:
+		if echo_texture and _light_texture:
+			sprite.texture = _light_texture
 		var tw := create_tween()
 		tw.tween_property(sprite, "modulate", Color.WHITE, 0.4)

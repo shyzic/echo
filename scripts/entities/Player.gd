@@ -14,6 +14,9 @@ var dead: bool        = false
 var input_locked: bool = false
 var has_key: bool     = false
 
+var _footstep_timer: float = 0.0
+const FOOTSTEP_INTERVAL: float = 0.4
+
 func _ready() -> void:
 	add_to_group("player")
 	interact_area.area_entered.connect(_on_interact_area_entered)
@@ -37,8 +40,14 @@ func _physics_process(_delta: float) -> void:
 		input = input.normalized()
 		_update_facing(input)
 		_play_walk()
+		
+		_footstep_timer -= _delta
+		if _footstep_timer <= 0.0:
+			AudioManager.play("footstep")
+			_footstep_timer = FOOTSTEP_INTERVAL
 	else:
 		_play_idle()
+		_footstep_timer = 0.0
 
 	velocity = input * speed
 	move_and_slide()

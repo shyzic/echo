@@ -1,0 +1,14 @@
+[gd_scene load_steps=3 format=3 uid="uid://hfebn5wlkho5"]
+
+[ext_resource type="Script" uid="uid://jhf0ghdkocm4" path="res://scripts/ui/IntroCutscene.gd" id="1_svu55"]
+[ext_resource type="VideoStream" uid="uid://r6x2rpinggqp" path="res://assets/cutscene/0510.ogv" id="2_o3kjc"]
+
+[node name="IntroCutscene" type="CanvasLayer"]
+script = ExtResource("1_svu55")
+
+[node name="VideoStreamPlayer" type="VideoStreamPlayer" parent="."]
+offset_right = 478.0
+offset_bottom = 267.0
+stream = ExtResource("2_o3kjc")
+autoplay = true
+expand = true

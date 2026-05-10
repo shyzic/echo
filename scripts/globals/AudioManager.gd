@@ -3,6 +3,7 @@ extends Node
 var sfx_players: Array[AudioStreamPlayer] = []
 var sfx_pool_size: int = 8
 var ambient_player: AudioStreamPlayer
+var bgm_player: AudioStreamPlayer
 var sfx_streams: Dictionary = {}
 
 const SAMPLE_RATE := 22050
@@ -15,23 +16,38 @@ func _ready() -> void:
 	ambient_player = AudioStreamPlayer.new()
 	ambient_player.volume_db = -18.0
 	add_child(ambient_player)
+	
+	bgm_player = AudioStreamPlayer.new()
+	bgm_player.volume_db = -10.0
+	add_child(bgm_player)
+	
 	_build_sfx_table()
+
+func _find_audio_file(base_path: String) -> String:
+	for ext in [".ogg", ".mp3", ".wav"]:
+		if ResourceLoader.exists(base_path + ext):
+			return base_path + ext
+	return ""
 
 func _build_sfx_table() -> void:
 	# First try to load real files, fall back to generated beeps
 	var file_map := {
-		"pickup":    "res://assets/audio/sfx/pickup.ogg",
-		"anchor":    "res://assets/audio/sfx/anchor.ogg",
-		"shift":     "res://assets/audio/sfx/shift.ogg",
-		"ping":      "res://assets/audio/sfx/ping.ogg",
-		"death":     "res://assets/audio/sfx/death.ogg",
-		"switch":    "res://assets/audio/sfx/switch.ogg",
-		"door":      "res://assets/audio/sfx/door.ogg",
-		"heartbeat": "res://assets/audio/sfx/heartbeat.ogg",
+		"pickup":    "res://assets/audio/sfx/pickup",
+		"anchor":    "res://assets/audio/sfx/anchor",
+		"shift":     "res://assets/audio/sfx/shift",
+		"ping":      "res://assets/audio/sfx/ping",
+		"death":     "res://assets/audio/sfx/death",
+		"switch":    "res://assets/audio/sfx/switch",
+		"door":      "res://assets/audio/sfx/door",
+		"heartbeat": "res://assets/audio/sfx/heartbeat",
+		"footstep":  "res://assets/audio/sfx/footstep",
+		"dialogue":  "res://assets/audio/sfx/dialogue",
+		"menu":      "res://assets/audio/music/menu",
 	}
 	for key in file_map:
-		if ResourceLoader.exists(file_map[key]):
-			sfx_streams[key] = load(file_map[key])
+		var path = _find_audio_file(file_map[key])
+		if path != "":
+			sfx_streams[key] = load(path)
 
 	# Generated fallbacks for any missing sounds
 	if not sfx_streams.has("pickup"):
@@ -61,10 +77,20 @@ func play(name: String) -> void:
 			p.play()
 			return
 
+func play_bgm(name: String) -> void:
+	var stream = sfx_streams.get(name, null)
+	if stream != null and bgm_player.stream != stream:
+		bgm_player.stream = stream
+		bgm_player.play()
+
+func stop_bgm() -> void:
+	bgm_player.stop()
+
 func play_ambient(reality: int) -> void:
-	# Try real files first
-	var path := "res://assets/audio/ambient/%s.ogg" % ("light" if reality == 0 else "echo")
-	if ResourceLoader.exists(path):
+	# Try real files first (.ogg, .mp3, .wav)
+	var base_path := "res://assets/audio/ambient/%s" % ("light" if reality == 0 else "echo")
+	var path := _find_audio_file(base_path)
+	if path != "":
 		var s = load(path)
 		if ambient_player.stream != s:
 			ambient_player.stream = s
