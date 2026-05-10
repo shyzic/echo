@@ -107,14 +107,14 @@ func _update_facing(dir: Vector2) -> void:
 func _play_walk() -> void:
 	if not sprite or not sprite.sprite_frames:
 		return
-	var anim_name := "walk_" + Facing.keys()[facing].to_lower()
+	var anim_name: String = "walk_" + Facing.keys()[facing].to_lower()
 	if sprite.sprite_frames.has_animation(anim_name) and sprite.animation != anim_name:
 		sprite.play(anim_name)
 
 func _play_idle() -> void:
 	if not sprite or not sprite.sprite_frames:
 		return
-	var anim_name := "idle_" + Facing.keys()[facing].to_lower()
+	var anim_name: String = "idle_" + Facing.keys()[facing].to_lower()
 	if sprite.sprite_frames.has_animation(anim_name) and sprite.animation != anim_name:
 		sprite.play(anim_name)
 
