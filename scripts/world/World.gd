@@ -12,6 +12,9 @@ const SCENE_PATHS := {
 	"Anchor":  "res://scenes/entities/Anchor.tscn",
 	"Chasm":   "res://scenes/entities/Chasm.tscn",
 	"Bridge":  "res://scenes/entities/Bridge.tscn",
+	"Door":    "res://scenes/entities/Door.tscn",
+	"Key":     "res://scenes/entities/Key.tscn",
+	"Switch":  "res://scenes/entities/Switch.tscn",
 }
 
 var _scenes: Dictionary = {}
@@ -23,6 +26,7 @@ func _ready() -> void:
 	GameState.current_seed = gen.seed
 	_apply_tiles(gen.grid)
 	_spawn_all(gen)
+	_spawn_puzzles(gen)
 	player.position = _wp(gen.pois.HOME)
 
 func _preload_scenes() -> void:
@@ -53,6 +57,41 @@ func _spawn_all(gen: Dictionary) -> void:
 		_add_poi_marker(gen.pois.HOME,  Color(1.0, 0.3, 0.3), poi_tex)
 		_add_poi_marker(gen.pois.HUT,   Color(0.3, 0.5, 1.0), poi_tex)
 		_add_poi_marker(gen.pois.HEART, Color(1.0, 0.9, 0.1), poi_tex)
+
+func _spawn_puzzles(gen: Dictionary) -> void:
+	for puzzle in gen.puzzle_spawns:
+		var pos: Vector2i = puzzle.pos
+		var id: String = puzzle.id
+		match puzzle.type:
+			"RealityBridgeGate":
+				# Chasm kills in Light, Bridge covers it in Echo
+				var chasm := _spawn("Chasm", pos)
+				var bridge := _spawn("Bridge", pos)
+				if chasm: chasm.entity_id = id + "_chasm"
+				if bridge: bridge.entity_id = id + "_bridge"
+				GameState.puzzle_states[id] = false
+
+			"KeyLockGate":
+				# Door blocks path, Key is nearby
+				var door := _spawn("Door", pos)
+				var key := _spawn("Key", pos + Vector2i(4, 0))
+				if door: door.entity_id = id + "_door"
+				if key:  key.entity_id  = id + "_key"
+				GameState.puzzle_states[id] = false
+
+			"EchoSwitchesGate":
+				# Two Echo-only switches must both be activated to open door
+				var door := _spawn("Door", pos)
+				var sw1  := _spawn("Switch", pos + Vector2i(-4, -4))
+				var sw2  := _spawn("Switch", pos + Vector2i( 4, -4))
+				if door: door.entity_id = id + "_door"
+				if sw1:  sw1.entity_id  = id + "_sw1"
+				if sw2:  sw2.entity_id  = id + "_sw2"
+				if door and sw1 and sw2:
+					var gate := EchoSwitchGate.new()
+					gate.setup([sw1, sw2], door)
+					entities.add_child(gate)
+				GameState.puzzle_states[id] = false
 
 func _spawn(type: String, tile_pos: Vector2i) -> Node:
 	if not _scenes.has(type):

@@ -13,6 +13,7 @@ enum Facing { DOWN, UP, LEFT, RIGHT }
 var facing: Facing = Facing.DOWN
 var dead: bool = false
 var input_locked: bool = false
+var has_key: bool = false
 
 func _physics_process(_delta: float) -> void:
 	if dead or input_locked or DialogueManager.active:
