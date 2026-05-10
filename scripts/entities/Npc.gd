@@ -5,6 +5,8 @@ extends Area2D
 
 var _talked := false
 
+func get_hint() -> String: return "Поговорить"
+
 func interact(_player: Node) -> void:
 	DialogueManager.start(dialogue_key)
 	_talked = true

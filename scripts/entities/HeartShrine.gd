@@ -12,6 +12,8 @@ func _ready() -> void:
 	tw.tween_property(sprite, "modulate:a", 0.3, 1.2)
 	tw.tween_property(sprite, "modulate:a", 1.0, 1.2)
 
+func get_hint() -> String: return "Прикоснуться к сердцу леса"
+
 func interact(_player: Node) -> void:
 	if _activated:
 		return

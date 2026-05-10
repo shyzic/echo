@@ -28,6 +28,8 @@ func open() -> void:
 			if child is CollisionShape2D:
 				child.disabled = true
 
+func get_hint() -> String: return "Открыть дверь"
+
 func interact(player: Node) -> void:
 	if _open:
 		return

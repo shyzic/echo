@@ -5,6 +5,7 @@ extends CanvasLayer
 @onready var hint_label: Label = $InteractHint
 
 func _ready() -> void:
+	add_to_group("hud")
 	RealityManager.reality_changed.connect(_on_reality_changed)
 	GameState.letters_changed.connect(_on_letters_changed)
 	hint_label.visible = false

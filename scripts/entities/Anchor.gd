@@ -23,6 +23,8 @@ func _process(_delta: float) -> void:
 	var in_echo := RealityManager.is_echo()
 	visible = (reality_filter == "echo" and in_echo) or (reality_filter == "light" and not in_echo)
 
+func get_hint() -> String: return "Сохранить прогресс"
+
 func interact(player: Node) -> void:
 	SaveManager.save_checkpoint(player.global_position, RealityManager.current)
 	AudioManager.play("anchor")

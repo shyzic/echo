@@ -3,8 +3,6 @@ class_name Player
 
 @export var speed: float = Const.PLAYER_SPEED
 
-#@onready var sprite: Sprite2D = $Sprite2D
-#@onready var anim: AnimationPlayer = $AnimationPlayer
 @onready var sprite: AnimatedSprite2D = $AnimatedSprite2D
 @onready var ping_cooldown_timer: Timer = $PingCooldown
 @onready var interact_area: Area2D = $InteractArea
@@ -17,6 +15,8 @@ var has_key: bool = false
 
 func _ready() -> void:
 	add_to_group("player")
+	interact_area.area_entered.connect(_on_interact_area_entered)
+	interact_area.area_exited.connect(_on_interact_area_exited)
 
 func _physics_process(_delta: float) -> void:
 	if dead or input_locked or DialogueManager.active:
@@ -51,7 +51,9 @@ func _input(event: InputEvent) -> void:
 	if event.is_action_pressed("interact") and not DialogueManager.active:
 		_try_interact()
 	if event.is_action_pressed("pause"):
-		get_tree().paused = true
+		var pause_scene = load("res://scenes/ui/PauseMenu.tscn")
+		if pause_scene:
+			get_tree().root.add_child(pause_scene.instantiate())
 
 func _do_ping() -> void:
 	AudioManager.play("ping")
@@ -63,11 +65,38 @@ func _do_ping() -> void:
 	ping_cooldown_timer.start(Const.PING_COOLDOWN)
 
 func _try_interact() -> void:
-	var areas = interact_area.get_overlapping_areas()
+	var areas := interact_area.get_overlapping_areas()
 	for area in areas:
 		if area.has_method("interact"):
 			area.interact(self)
 			return
+
+func _on_interact_area_entered(area: Area2D) -> void:
+	if area.has_method("interact"):
+		var hint := "[E] "
+		if area.has_method("get_hint"):
+			hint += area.get_hint()
+		elif area.get_parent() is StaticBody2D or area is Area2D:
+			hint += "Взаимодействовать"
+		_show_hud_hint(hint)
+
+func _on_interact_area_exited(_area: Area2D) -> void:
+	# Only hide if no other interactables remain
+	var areas := interact_area.get_overlapping_areas()
+	for a in areas:
+		if a.has_method("interact"):
+			return
+	_hide_hud_hint()
+
+func _show_hud_hint(text: String) -> void:
+	var hud := get_tree().get_first_node_in_group("hud")
+	if hud and hud.has_method("show_hint"):
+		hud.show_hint(text)
+
+func _hide_hud_hint() -> void:
+	var hud := get_tree().get_first_node_in_group("hud")
+	if hud and hud.has_method("hide_hint"):
+		hud.hide_hint()
 
 func _update_facing(dir: Vector2) -> void:
 	if abs(dir.x) > abs(dir.y):
@@ -75,33 +104,25 @@ func _update_facing(dir: Vector2) -> void:
 	else:
 		facing = Facing.DOWN if dir.y > 0 else Facing.UP
 
-#func _play_walk() -> void:
-	#var anim_name = "walk_" + Facing.keys()[facing].to_lower()
-	#if anim and anim.has_animation(anim_name) and anim.current_animation != anim_name:
-		#anim.play(anim_name)
 func _play_walk() -> void:
-	var anim_name = "walk_" + Facing.keys()[facing].to_lower()
+	if not sprite or not sprite.sprite_frames:
+		return
+	var anim_name := "walk_" + Facing.keys()[facing].to_lower()
+	if sprite.sprite_frames.has_animation(anim_name) and sprite.animation != anim_name:
+		sprite.play(anim_name)
 
-	if sprite.sprite_frames.has_animation(anim_name):
-		if sprite.animation != anim_name:
-			sprite.play(anim_name)
-
-#func _play_idle() -> void:
-	#var anim_name = "idle_" + Facing.keys()[facing].to_lower()
-	#if anim and anim.has_animation(anim_name) and anim.current_animation != anim_name:
-		#anim.play(anim_name)
 func _play_idle() -> void:
-	var anim_name = "idle_" + Facing.keys()[facing].to_lower()
-
-	if sprite.sprite_frames.has_animation(anim_name):
-		if sprite.animation != anim_name:
-			sprite.play(anim_name)
-
+	if not sprite or not sprite.sprite_frames:
+		return
+	var anim_name := "idle_" + Facing.keys()[facing].to_lower()
+	if sprite.sprite_frames.has_animation(anim_name) and sprite.animation != anim_name:
+		sprite.play(anim_name)
 
 func die() -> void:
 	if dead:
 		return
 	dead = true
+	_hide_hud_hint()
 	AudioManager.play("death")
 	GameState.player_died.emit()
 	var overlay_scene = load("res://scenes/effects/DeathOverlay.tscn")
@@ -117,6 +138,7 @@ func die() -> void:
 		RealityManager.current = data.reality
 		GameState.letters_collected = data.letters.duplicate()
 		GameState.puzzle_states = data.puzzles.duplicate()
+		has_key = false
 	overlay.play_fade_in()
 	await overlay.fade_in_done
 	overlay.queue_free()
