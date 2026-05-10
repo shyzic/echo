@@ -202,7 +202,8 @@ static func _validate(grid: Array, pois: Dictionary) -> bool:
 	visited[pois.HOME] = true
 	while queue.size() > 0:
 		var pos: Vector2i = queue.pop_front()
-		for dir: Vector2i in [Vector2i.UP, Vector2i.DOWN, Vector2i.LEFT, Vector2i.RIGHT]:
+		var dirs3: Array[Vector2i] = [Vector2i.UP, Vector2i.DOWN, Vector2i.LEFT, Vector2i.RIGHT]
+		for dir: Vector2i in dirs3:
 			var nxt: Vector2i = pos + dir
 			if nxt.x < 0 or nxt.x >= MAP_W or nxt.y < 0 or nxt.y >= MAP_H:
 				continue
