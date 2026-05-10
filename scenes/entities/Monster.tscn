@@ -1,0 +1,38 @@
+[gd_scene load_steps=5 format=3 uid="uid://c00000000040"]
+
+[ext_resource type="Script" path="res://scripts/entities/Monster.gd" id="1_monster"]
+[ext_resource type="Texture2D" path="res://assets/sprites/player_placeholder.png" id="2_monster"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_body"]
+size = Vector2(14, 8)
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_hurt"]
+radius = 10.0
+
+[node name="Monster" type="CharacterBody2D"]
+collision_layer = 4
+collision_mask = 1
+script = ExtResource("1_monster")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("2_monster")
+offset = Vector2(0, -24)
+modulate = Color(0.8, 0.2, 0.2, 1)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, -4)
+shape = SubResource("RectangleShape2D_body")
+
+[node name="DetectionArea" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 1
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="DetectionArea"]
+shape = SubResource("RectangleShape2D_body")
+
+[node name="HurtArea" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 1
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="HurtArea"]
+shape = SubResource("CircleShape2D_hurt")

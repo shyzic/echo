@@ -15,6 +15,9 @@ var dead: bool = false
 var input_locked: bool = false
 var has_key: bool = false
 
+func _ready() -> void:
+	add_to_group("player")
+
 func _physics_process(_delta: float) -> void:
 	if dead or input_locked or DialogueManager.active:
 		velocity = Vector2.ZERO

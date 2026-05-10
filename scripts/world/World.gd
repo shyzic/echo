@@ -6,15 +6,18 @@ extends Node2D
 @onready var canvas_modulate: CanvasModulate = $CanvasModulate
 
 const SCENE_PATHS := {
-	"Tree":    "res://scenes/entities/Tree.tscn",
-	"Stone":   "res://scenes/entities/Stone.tscn",
-	"Letter":  "res://scenes/entities/Letter.tscn",
-	"Anchor":  "res://scenes/entities/Anchor.tscn",
-	"Chasm":   "res://scenes/entities/Chasm.tscn",
-	"Bridge":  "res://scenes/entities/Bridge.tscn",
-	"Door":    "res://scenes/entities/Door.tscn",
-	"Key":     "res://scenes/entities/Key.tscn",
-	"Switch":  "res://scenes/entities/Switch.tscn",
+	"Tree":        "res://scenes/entities/Tree.tscn",
+	"Stone":       "res://scenes/entities/Stone.tscn",
+	"Letter":      "res://scenes/entities/Letter.tscn",
+	"Anchor":      "res://scenes/entities/Anchor.tscn",
+	"Chasm":       "res://scenes/entities/Chasm.tscn",
+	"Bridge":      "res://scenes/entities/Bridge.tscn",
+	"Door":        "res://scenes/entities/Door.tscn",
+	"Key":         "res://scenes/entities/Key.tscn",
+	"Switch":      "res://scenes/entities/Switch.tscn",
+	"Monster":     "res://scenes/entities/Monster.tscn",
+	"Npc":         "res://scenes/entities/Npc.tscn",
+	"HeartShrine": "res://scenes/entities/HeartShrine.tscn",
 }
 
 var _scenes: Dictionary = {}
@@ -51,6 +54,22 @@ func _spawn_all(gen: Dictionary) -> void:
 
 	for pos in gen.anchor_spawns:
 		_spawn("Anchor", pos)
+
+	# Story POIs
+	var npc := _spawn("Npc", gen.pois.HUT)
+	if npc:
+		npc.dialogue_key = "mother_intro"
+		npc.entity_id = "mother"
+
+	var shrine := _spawn("HeartShrine", gen.pois.HEART)
+	if shrine:
+		shrine.entity_id = "heart_shrine"
+
+	# Monsters from ProcGen
+	for spawn in gen.monster_spawns:
+		var m := _spawn("Monster", spawn.pos)
+		if m:
+			m.add_to_group("monster")
 
 	var poi_tex = load("res://assets/ui/poi_marker.png")
 	if poi_tex:

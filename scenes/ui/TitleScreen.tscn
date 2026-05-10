@@ -1,0 +1,43 @@
+[gd_scene load_steps=2 format=3 uid="uid://c00000000045"]
+
+[ext_resource type="Script" path="res://scripts/ui/TitleScreen.gd" id="1_title"]
+
+[node name="TitleScreen" type="CanvasLayer"]
+script = ExtResource("1_title")
+
+[node name="Background" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.04, 0.04, 0.1, 1)
+
+[node name="VBox" type="VBoxContainer" parent="."]
+anchors_preset = -1
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -120.0
+offset_top = -80.0
+offset_right = 120.0
+offset_bottom = 80.0
+theme_override_constants/separation = 20
+
+[node name="GameTitle" type="Label" parent="VBox"]
+text = "Эхо Двух Миров"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 22
+
+[node name="Subtitle" type="Label" parent="VBox"]
+text = "Echo of Two Worlds"
+horizontal_alignment = 1
+modulate = Color(0.6, 0.6, 0.8, 1)
+
+[node name="Spacer" type="Control" parent="VBox"]
+custom_minimum_size = Vector2(0, 16)
+
+[node name="BtnStart" type="Button" parent="VBox"]
+text = "Начать игру"
+
+[node name="BtnQuit" type="Button" parent="VBox"]
+text = "Выйти"
