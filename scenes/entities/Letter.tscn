@@ -1,7 +1,7 @@
 [gd_scene load_steps=4 format=3 uid="uid://c00000000010"]
 
 [ext_resource type="Script" uid="uid://yvm5vwwdit7l" path="res://scripts/entities/Letter.gd" id="1_letter"]
-[ext_resource type="Texture2D" uid="uid://cvkc5m73ur7a0" path="res://assets/sprites/letter_placeholder.png" id="2_letter"]
+[ext_resource type="Texture2D" uid="uid://khw846x4xhcp" path="res://assets/sprites/basic/letter_placeholder.png" id="2_dudmm"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_letter"]
 size = Vector2(14, 14)
@@ -10,7 +10,7 @@ size = Vector2(14, 14)
 script = ExtResource("1_letter")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
-texture = ExtResource("2_letter")
+texture = ExtResource("2_dudmm")
 offset = Vector2(0, -8)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]

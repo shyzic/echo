@@ -1,6 +1,7 @@
-[gd_scene load_steps=7 format=3 uid="uid://c00000000002"]
+[gd_scene load_steps=8 format=3 uid="uid://c00000000002"]
 
 [ext_resource type="Script" uid="uid://d4mu0q3cjq2ej" path="res://scripts/world/World.gd" id="1_world"]
+[ext_resource type="Texture2D" uid="uid://b25ajyfhrk2wg" path="res://assets/tiles/placeholder2.png" id="2_252at"]
 [ext_resource type="TileSet" uid="uid://c00000000005" path="res://assets/tiles/tileset.tres" id="2_tileset"]
 [ext_resource type="PackedScene" uid="uid://c00000000003" path="res://scenes/entities/Player.tscn" id="3_player"]
 [ext_resource type="PackedScene" uid="uid://c00000000020" path="res://scenes/effects/RealityFade.tscn" id="4_fade"]
@@ -10,6 +11,7 @@
 [node name="World" type="Node2D"]
 y_sort_enabled = true
 script = ExtResource("1_world")
+echo_ground_texture = ExtResource("2_252at")
 
 [node name="CanvasModulate" type="CanvasModulate" parent="."]
 
